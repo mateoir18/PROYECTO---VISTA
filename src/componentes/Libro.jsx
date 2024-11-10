@@ -12,7 +12,7 @@ export const Libro = () => {
 
 
   const handleEdit = () => {
-    navigate(`/libro/edit/${libro.id}`); // Redirige a la vista de edición del libro con su ID
+    navigate(`/libros/edit/${libro.id}`); // Redirige a la vista de edición del libro con su ID
   };
   
 
@@ -62,7 +62,7 @@ export const Libro = () => {
           </Typography>
         </CardContent>
         <CardActions>
-          <Button size="small">Comprar</Button>
+          <Button onClick={() => navigate("/compras/nueva/:idUsuario/:idLibro")} size="small">Comprar</Button>
           <Button onClick={handleEdit} size="small">Editar</Button>
         </CardActions>
       </Card>

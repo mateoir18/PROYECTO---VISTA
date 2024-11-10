@@ -19,3 +19,50 @@
     height: 300px;
     border-radius: 20px;
 }
+
+.boton-ver {
+    background-color: #4CAF50; /* Verde */
+    color: white;
+    padding: 8px 16px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.boton-ver:hover {
+    background-color: #45a049;
+}
+
+.boton-eliminar {
+    background-color: black; /* Rojo */
+    color: white;
+    padding: 8px 16px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.boton-eliminar:hover {
+    background-color: #e53935;
+}
+
+.boton-añadir {
+    background-color: #2271b3; /* Verde */
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 20px; /* Separación de la sección */
+  }
+  
+  .boton-añadir:hover {
+    background-color: blue; /* Oscurecido al pasar el ratón */
+  }
+  
+

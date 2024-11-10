@@ -15,7 +15,7 @@ export const Libros = () => {
 
   // Función para navegar a la vista de un libro específico
   const handleLibro = (id) => {
-    navigate(`/libro/${id}`); // Redirige a la vista del libro con su ID
+    navigate(`/libros/${id}`); // Redirige a la vista del libro con su ID
   };
 
 
@@ -50,6 +50,14 @@ export const Libros = () => {
 
   return (
     <TableContainer component={Paper}>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => navigate("/libros/add")}
+        sx={{ mb: 2 }}
+      >
+        Añadir Libro
+      </Button>
       <Table sx={{ minWidth: 700 }} aria-label="libros table">
         <TableHead>
           <TableRow>
@@ -86,6 +94,15 @@ export const Libros = () => {
                   style={{ marginLeft: "10px" }}
                 >
                   Eliminar
+                </Button>
+                <Button
+                  variant="contained"
+                  color="green"
+                  size="small"
+                  onClick={() => navigate("/compras/nueva/:idUsuario/:idLibro")}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Comprar
                 </Button>
               </TableCell>
             </TableRow>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -6,40 +7,89 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 
 export const Autores = () => {
-  const [autores, setAutores] = useState([]); // Cambiado a array
+  const [autores, setAutores] = useState([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Hacemos la llamada a la API al montar el componente
     fetch("http://localhost:8080/autores")
       .then((res) => res.json())
       .then((result) => {
-        setAutores(result); // Guardamos la respuesta de la API
+        setAutores(result);
       });
-  }, []); // El array vacío asegura que se ejecute solo una vez
+  }, []);
+
+  const eliminarAutor = async (id) => {
+    const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar este autor?");
+    if (confirmDelete) {
+      try {
+        const response = await fetch(`http://localhost:8080/autores/del/${id}`, {
+          method: "DELETE",
+        });
+        if (response.ok) {
+          setAutores(autores.filter((autor) => autor.id !== id));
+          alert("Autor eliminado exitosamente");
+        } else {
+          alert("Error al eliminar el autor");
+        }
+      } catch (error) {
+        console.error("Error en la solicitud:", error);
+        alert("Error al conectar con el servidor");
+      }
+    }
+  };
 
   return (
-    <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="autores table">
-        <TableHead>
-          <TableRow>
-            <TableCell></TableCell>
-            <TableCell>Nombre</TableCell>
-            <TableCell>Apellido</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {autores.map((autor) => (
-            <TableRow key={autor.id}>
-              <TableCell>{autor.id}</TableCell>
-              <TableCell>{autor.nombre}</TableCell>
-              <TableCell>{autor.apellido}</TableCell>
+    <Box>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => navigate("/autores/add")}
+        sx={{ mb: 2 }}
+      >
+        Añadir Autor
+      </Button>
+      <TableContainer component={Paper}>
+        <Table sx={{ minWidth: 650 }} aria-label="autores table">
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Nombre</TableCell>
+              <TableCell>Apellido</TableCell>
+              <TableCell>Acciones</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TableContainer>
+          </TableHead>
+          <TableBody>
+            {autores.map((autor) => (
+              <TableRow key={autor.id}>
+                <TableCell>{autor.id}</TableCell>
+                <TableCell>{autor.nombre}</TableCell>
+                <TableCell>{autor.apellido}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => navigate(`/autores/${autor.id}`)}
+                  >
+                    Ver
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={() => eliminarAutor(autor.id)}
+                    sx={{ ml: 1 }}
+                  >
+                    Eliminar
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    </Box>
   );
 };
