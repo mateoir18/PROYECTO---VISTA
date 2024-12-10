@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
 import { Button, MenuItem, Select, InputLabel, FormControl } from "@mui/material";
+import { useAuth } from "../servicios/auth";
+
 
 export const FormLibro = () => {
   const { id } = useParams(); // Obtener el id del libro desde la URL
@@ -10,12 +12,26 @@ export const FormLibro = () => {
   const [precio, setPrecio] = useState("");
   const [autorId, setAutorId] = useState(""); // ID del autor seleccionado
   const [autores, setAutores] = useState([]); // Lista de autores disponibles
+  const token = useAuth().getToken();
+  const navigate = useNavigate();
+  const rol = useAuth().getRol();
+
+
+  useEffect(() => {
+    if (token) {
+      if (rol !== "ADMIN") {
+        navigate("/login");
+      }
+    } else {
+      navigate("/login");
+    }
+  }, [token, rol]);
 
   // Función para obtener los datos del libro por su ID
   useEffect(() => {
     const fetchLibro = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/libros/${id}`);
+        const response = await fetch(`http://localhost:8080/libro/${id}`);
         const libro = await response.json();
         setTitulo(libro.titulo);
         setPrecio(libro.precio);
@@ -49,13 +65,16 @@ export const FormLibro = () => {
           id: autorId, // Solo necesitas enviar el ID del autor
         },
       };
-      const response = await fetch(`http://localhost:8080/libros/${id}`, {
+      const response = await fetch(`http://localhost:8080/libros/edit/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
         },
+        credentials: "include",
         body: JSON.stringify(libroActualizado),
       });
+      
 
       if (response.ok) {
         alert("Libro actualizado correctamente");

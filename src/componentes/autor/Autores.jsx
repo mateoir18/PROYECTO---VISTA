@@ -9,10 +9,22 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
+import { useAuth } from "../servicios/auth";
 
 export const Autores = () => {
   const [autores, setAutores] = useState([]);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
+  const token = useAuth().getToken();
+  const rol = useAuth().getRol();
+
+  useEffect(() => {
+    // Verifica si el token es "ADMIN"
+    if (token) {
+      if(rol=="ADMIN")
+      setIsAdmin(true);
+    }
+  }, [token,rol]);
 
   useEffect(() => {
     fetch("http://localhost:8080/autores")
@@ -28,6 +40,11 @@ export const Autores = () => {
       try {
         const response = await fetch(`http://localhost:8080/autores/del/${id}`, {
           method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          credentials: "include",
         });
         if (response.ok) {
           setAutores(autores.filter((autor) => autor.id !== id));
@@ -44,14 +61,16 @@ export const Autores = () => {
 
   return (
     <Box>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => navigate("/autores/add")}
-        sx={{ mb: 2 }}
-      >
-        Añadir Autor
-      </Button>
+      {isAdmin && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/autores/add")}
+          sx={{ mb: 2 }}
+        >
+          Añadir Autor
+        </Button>
+      )}
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label="autores table">
           <TableHead>
@@ -76,14 +95,16 @@ export const Autores = () => {
                   >
                     Ver
                   </Button>
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={() => eliminarAutor(autor.id)}
-                    sx={{ ml: 1 }}
-                  >
-                    Eliminar
-                  </Button>
+                  {isAdmin && (
+                    <Button
+                      variant="outlined"
+                      color="secondary"
+                      onClick={() => eliminarAutor(autor.id)}
+                      sx={{ ml: 1 }}
+                    >
+                      Eliminar
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

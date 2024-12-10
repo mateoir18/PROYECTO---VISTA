@@ -1,18 +1,32 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Card, CardContent, Typography, CardActions, Button } from '@mui/material';
+import { useAuth } from "../servicios/auth";
 
 export const Biografia = () => {
   const { id } = useParams();
   const [biografia, setBiografia] = useState(null);
   const navigate = useNavigate();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const token = useAuth().getToken();
+  const rol = useAuth().getRol();
+
+
+  useEffect(() => {
+    // Verifica si el token es "ADMIN"
+    if (token) {
+      if(rol=="ADMIN")
+      setIsAdmin(true);
+    }
+  }, [token,rol]);
+
 
   const handleEdit = () => {
     navigate(`/biografias/edit/${biografia?.id}`);
   };
 
   useEffect(() => {
-    fetch(`http://localhost:8080/biografias/${id}`)
+    fetch(`http://localhost:8080/biografia/${id}`)
       .then((res) => res.json())
       .then((result) => {
         setBiografia(result);
@@ -47,7 +61,9 @@ export const Biografia = () => {
           </Typography>
         </CardContent>
         <CardActions>
+        {isAdmin && (
           <Button onClick={handleEdit} size="small">Editar</Button>
+        )}
         </CardActions>
       </Card>
     </Box>

@@ -1,31 +1,52 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import Paper from "@mui/material/Paper";
 import Button from "@mui/material/Button";
+import { useAuth } from "../servicios/auth";
 
 export const Libros = () => {
   const [libros, setLibros] = useState([]); // Inicializamos como un array vacío
   const navigate = useNavigate(); // Hook para navegación
+  const token = useAuth().getToken();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [canBuy, setCanBuy] = useState(false);
+  const rol = useAuth().getRol();
 
-  // Función para navegar a la vista de un libro específico
+  useEffect(() => {
+    // Verifica los roles según el token
+    if (token) {
+      if (rol === "ADMIN") {
+        setIsAdmin(true);
+        setCanBuy(true);
+      } else if (rol === "USER") {
+        setCanBuy(true);
+      }
+    }
+  }, [token, rol]);
+
   const handleLibro = (id) => {
     navigate(`/libros/${id}`); // Redirige a la vista del libro con su ID
   };
-
 
   const handleEliminar = async (id) => {
     const confirmed = window.confirm("¿Estás seguro de que deseas eliminar este libro?");
     if (confirmed) {
       try {
-        const response = await fetch(`http://localhost:8080/libros/del/${id}`, {
+        const response = await fetch(`http://localhost:8080/libro/del/${id}`, {
           method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token,
+          },
+          credentials: "include",
         });
+
         if (response.ok) {
           setLibros(libros.filter((libro) => libro.id !== id)); // Actualiza el estado eliminando el libro
           alert("Libro eliminado correctamente");
@@ -50,14 +71,16 @@ export const Libros = () => {
 
   return (
     <TableContainer component={Paper}>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => navigate("/libros/add")}
-        sx={{ mb: 2 }}
-      >
-        Añadir Libro
-      </Button>
+      {isAdmin && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => navigate("/libros/add")}
+          sx={{ mb: 2 }}
+        >
+          Añadir Libro
+        </Button>
+      )}
       <Table sx={{ minWidth: 700 }} aria-label="libros table">
         <TableHead>
           <TableRow>
@@ -86,24 +109,28 @@ export const Libros = () => {
                 >
                   Ver
                 </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  size="small"
-                  onClick={() => handleEliminar(libro.id)}
-                  style={{ marginLeft: "10px" }}
-                >
-                  Eliminar
-                </Button>
-                <Button
-                  variant="contained"
-                  color="green"
-                  size="small"
-                  onClick={() => navigate("/compras/nueva/:idUsuario/:idLibro")}
-                  style={{ marginLeft: "10px" }}
-                >
-                  Comprar
-                </Button>
+                {isAdmin && (
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    size="small"
+                    onClick={() => handleEliminar(libro.id)}
+                    style={{ marginLeft: "10px" }}
+                  >
+                    Eliminar
+                  </Button>
+                )}
+                {canBuy && (
+                  <Button
+                    variant="contained"
+                    color="success"
+                    size="small"
+                    onClick={() => navigate(`/compras/nueva/:idUsuario/${libro.id}`)}
+                    style={{ marginLeft: "10px" }}
+                  >
+                    Comprar
+                  </Button>
+                )}
               </TableCell>
             </TableRow>
           ))}

@@ -8,22 +8,55 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from "../servicios/auth";
 
 export const Usuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
   const navigate = useNavigate();
+  const token = useAuth().getToken();
+  const rol = useAuth().getRol();
+
 
   useEffect(() => {
-    fetch("http://localhost:8080/usuarios")
-      .then((res) => res.json())
+    if (token) {
+      if (rol !== "ADMIN") {
+        navigate("/login");
+      }
+    } else {
+      navigate("/login");
+    }
+  }, [token, rol]);
+
+
+  useEffect(() => {
+    fetch("http://localhost:8080/usuarios", {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token, // Asegúrate de que `token` esté definido
+      },
+      credentials: "include", // Incluye cookies en la solicitud
+    })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("No se pudo obtener la lista de usuarios");
+        }
+        return res.json();
+      })
       .then((result) => {
-        setUsuarios(result);
-      });
-  }, []);
+        setUsuarios(result); // Actualiza el estado con los usuarios obtenidos
+      })
+      .catch((error) => console.error("Error al obtener usuarios:", error));
+  }, [token]); // Agrega `token` como dependencia
+  
 
   const handleDelete = (id) => {
-    fetch(`http://localhost:8080/usuarios/${id}`, {
-      method: 'DELETE',
+    fetch(`http://localhost:8080/usuarios/del/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      credentials: "include",
     })
       .then((res) => {
         if (res.ok) {
@@ -32,6 +65,7 @@ export const Usuarios = () => {
       })
       .catch((error) => console.error("Error al eliminar usuario:", error));
   };
+  
 
   const handleView = (id) => {
     navigate(`/usuarios/${id}`);
@@ -44,7 +78,7 @@ export const Usuarios = () => {
         <TableHead>
           <TableRow>
             <TableCell>ID</TableCell>
-            <TableCell>Username</TableCell>
+            <TableCell>Usuario</TableCell>
             <TableCell>Password</TableCell>
             <TableCell>Rol</TableCell>
             <TableCell>Acciones</TableCell>
@@ -54,7 +88,7 @@ export const Usuarios = () => {
           {usuarios.map((usuario) => (
             <TableRow key={usuario.id}>
               <TableCell>{usuario.id}</TableCell>
-              <TableCell>{usuario.username}</TableCell>
+              <TableCell>{usuario.usuario}</TableCell>
               <TableCell>{usuario.password}</TableCell>
               <TableCell>{usuario.rol}</TableCell>
               <TableCell>

@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Box, Card, CardContent, Typography, CardActions, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../servicios/auth";
+
 
 export const Autor = () => {
   const { id } = useParams();
@@ -11,12 +13,29 @@ export const Autor = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate(); // Hook para navegación
+  const [isAdmin, setIsAdmin] = useState(false);
+  const token = useAuth().getToken();
+  const rol = useAuth().getRol();
+
+
+  useEffect(() => {
+    // Verifica si el token es "ADMIN"
+    if (token) {
+      if(rol=="ADMIN")
+      setIsAdmin(true);
+    }
+  }, [token,rol]);
+
+
+
+
+
 
   // Cargar los detalles del autor
   useEffect(() => {
     const fetchAutor = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/autores/${id}`);
+        const response = await fetch(`http://localhost:8080/autor/${id}`);
         if (!response.ok) {
           throw new Error("No se pudo obtener la información del autor");
         }
@@ -36,7 +55,7 @@ export const Autor = () => {
   useEffect(() => {
     const fetchBiografia = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/biografias/${id}`);
+        const response = await fetch(`http://localhost:8080/biografia/${id}`);
         if (!response.ok) {
           throw new Error("No se pudo obtener la información de la biografía");
         }
@@ -116,7 +135,9 @@ export const Autor = () => {
           ) : (
             <Typography variant="body2">No hay libros disponibles</Typography>
           )}
-          <Button onClick={handleEdit} size="small">Editar</Button>
+          {isAdmin && (
+            <Button onClick={handleEdit} size="small">Editar</Button>
+          )}
         </CardContent>
         <CardActions></CardActions>
       </Card>

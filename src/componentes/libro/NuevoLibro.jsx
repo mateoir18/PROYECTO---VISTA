@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, MenuItem, Select, FormControl, InputLabel, Typography } from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Box, TextField, Button, MenuItem, Select, FormControl, InputLabel, } from '@mui/material';
+import { useAuth } from "../servicios/auth";
+import { useNavigate } from "react-router-dom";
 
 export const NuevoLibro = () => {
     const [titulo, setTitulo] = useState('');
@@ -7,6 +9,21 @@ export const NuevoLibro = () => {
     const [autor, setAutor] = useState('');
     const [autores, setAutores] = useState([]);
     const [error, setError] = useState(null);
+    const token = useAuth().getToken();
+    const navigate = useNavigate();
+    const rol = useAuth().getRol();
+
+
+    useEffect(() => {
+        if (token) {
+          if (rol !== "ADMIN") {
+            navigate("/login");
+          }
+        } else {
+          navigate("/login");
+        }
+      }, [token, rol]);
+    
 
     // Obtener lista de autores al cargar el componente
     useEffect(() => {
@@ -31,11 +48,16 @@ export const NuevoLibro = () => {
         const nuevoLibro = { titulo, precio, autor: { id: autor } };
 
         try {
-            const response = await fetch('http://localhost:8080/libros', {
+            const response = await fetch('http://localhost:8080/libros/add', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(nuevoLibro)
-            });
+                headers: {
+                  'Content-Type': 'application/json',
+                  Authorization: 'Bearer ' + token,
+                },
+                credentials: 'include',
+                body: JSON.stringify(nuevoLibro),
+              });
+              
 
             if (!response.ok) {
                 throw new Error('Error al agregar el libro');

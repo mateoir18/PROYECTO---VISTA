@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Box, TextField, Button, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
+import { useAuth } from "../servicios/auth";
+import { useNavigate } from "react-router-dom";
 
 export const NuevaBiografia = () => {
   const [autores, setAutores] = useState([]);
@@ -8,6 +10,21 @@ export const NuevaBiografia = () => {
   const [nacionalidad, setNacionalidad] = useState("");
   const [obrasDestacadas, setObrasDestacadas] = useState("");
   const [premios, setPremios] = useState("");
+  const token = useAuth().getToken();
+  const rol = useAuth().getRol();
+  const navigate = useNavigate();
+
+
+  useEffect(() => {
+    if (token) {
+      if (rol !== "ADMIN") {
+        navigate("/login");
+      }
+    } else {
+      navigate("/login");
+    }
+  }, [token, rol]);
+
 
   useEffect(() => {
     // Llamada a la API para obtener todos los autores
@@ -29,11 +46,16 @@ export const NuevaBiografia = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:8080/biografias", {
+      const response = await fetch("http://localhost:8080/biografias/add", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token,
+        },
+        credentials: "include",
         body: JSON.stringify(nuevaBiografia),
       });
+      
       if (response.ok) {
         alert("Biografía añadida exitosamente");
         // Limpia los campos del formulario
